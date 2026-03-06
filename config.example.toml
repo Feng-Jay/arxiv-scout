@@ -1,0 +1,84 @@
+[interests]
+topics = [
+    "dense passage retrieval",
+    "retrieval augmented generation",
+    "knowledge graphs",
+    "LLM reasoning",
+    "information extraction",
+]
+keywords = [
+    "retrieval",
+    "question answering",
+    "contrastive learning",
+    "dense retrieval",
+    "neural search",
+]
+# Papers scoring below this threshold (0.0–1.0) are dropped after the filter step
+relevance_threshold = 0.6
+
+[sources.arxiv]
+categories = ["cs.IR", "cs.CL", "cs.AI"]
+max_results = 200
+days_back = 1
+
+# ── LLM — three independent model slots ───────────────────────────────────────
+#
+#  Each slot has its own provider, api_key, model, and max_tokens.
+#  provider options: "anthropic" | "openai" | "custom"
+#  base_url is required for "custom", optional override for "openai".
+#
+#  deep      = true  →  download each paper's PDF, extract the first `pdf_chars`
+#                        characters, and include them in the analysis prompt.
+#                        Produces richer analysis with experimental details.
+#  deep      = false →  abstract-only analysis (faster, cheaper).  [default]
+#  pdf_chars = N     →  max extracted PDF characters fed to the model. [default: 20000]
+#
+[llm]
+deep      = false
+# pdf_chars = 20000
+
+# ① Filter model — cheap & fast; batch-scores paper abstracts for relevance
+[llm.filter]
+provider   = "anthropic"
+api_key    = "sk-ant-..."
+model      = "claude-haiku-4-5-20251001"
+max_tokens = 2048
+
+# ② Analysis model — strong; reads abstracts (or PDF text in deep mode) per paper
+[llm.analysis]
+provider   = "anthropic"
+api_key    = "sk-ant-..."
+model      = "claude-sonnet-4-6"
+max_tokens = 4096
+
+# ③ Report model — reserved; configure for future report generation
+[llm.report]
+provider   = "anthropic"
+api_key    = "sk-ant-..."
+model      = "claude-opus-4-6"
+max_tokens = 8192
+
+# Mix providers across slots — e.g. use a local model for filtering:
+# [llm.filter]
+# provider   = "custom"
+# api_key    = "none"
+# base_url   = "http://localhost:11434/v1"
+# model      = "qwen2.5:14b"
+# max_tokens = 2048
+
+# ── Output ─────────────────────────────────────────────────────────────────────
+[output]
+output_dir = "./digests"
+
+# ── Email (optional) ───────────────────────────────────────────────────────────
+# [email]
+# smtp_host    = "smtp.gmail.com"
+# smtp_port    = 587
+# username     = "you@gmail.com"
+# password_env = "EMAIL_PASSWORD"   # export EMAIL_PASSWORD=<app-password>
+# from         = "you@gmail.com"
+# to           = ["you@gmail.com"]
+
+# ── Daemon schedule ────────────────────────────────────────────────────────────
+[schedule]
+time = "08:00"   # UTC

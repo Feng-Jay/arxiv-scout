@@ -1,0 +1,62 @@
+[interests]
+topics = [
+    "Software Engineering",
+    "Software Maintainence",
+    "Software Secutiry",
+    "Automated Program Repair",
+    "Vulnerability Detection",
+    "Vulnerability Repair",
+]
+keywords = [
+    "Automated Program Repair",
+    "Vulnerability Detection",
+    "Vulnerability Repair",
+    "Large Language Model",
+    "LLM",
+    "Program Analysis"
+]
+
+# Papers scoring below this threshold (0.0–1.0) are dropped
+relevance_threshold = 0.6
+
+[sources.arxiv]
+categories = ["cs.SE", "cs.PL", "cs.CR"]
+max_results = 40
+days_back = 3  # Fetch papers submitted in the last N days
+
+[llm]
+deep      = true
+pdf_chars = 15000   # max extracted PDF characters when deep = true
+
+# ① Filter model — cheap & fast; batch-scores paper abstracts for relevance
+[llm.filter]
+provider   = "custom"
+base_url   = "http://yunwu.ai/v1"
+api_key    = "sk-gIXN1F8RuceKnoHoDofaPFajgVpDE1AdnI4NEtNcsWXcX0kZ"
+model      = "gpt-4.1-mini"
+max_tokens = 8192
+
+# ② Analysis model — powerful; reads abstracts and produces structured analysis
+[llm.analysis]
+provider   = "custom"
+base_url   = "http://yunwu.ai/v1"
+api_key    = "sk-gIXN1F8RuceKnoHoDofaPFajgVpDE1AdnI4NEtNcsWXcX0kZ"
+model      = "gpt-5.2"
+max_tokens = 8192
+
+[output]
+output_dir = "./digests"
+
+# --- Email (optional) ---
+# Remove the leading '#' characters to enable email delivery.
+# [email]
+# smtp_host = "smtp.gmail.com"
+# smtp_port = 587
+# username = "you@gmail.com"
+# password_env = "EMAIL_PASSWORD"   # export EMAIL_PASSWORD=<app-password>
+# from = "you@gmail.com"
+# to = ["you@gmail.com"]
+
+[schedule]
+# UTC time for the daemon's daily run
+time = "08:00"
