@@ -29,6 +29,7 @@ enum Commands {
     Run,
     /// Run as a daemon; re-executes the pipeline daily at the scheduled UTC time
     Daemon,
+    Debug,
 }
 
 #[tokio::main]
@@ -46,6 +47,7 @@ async fn main() -> Result<()> {
     match cli.command {
         Commands::Run => run_once(&cfg).await?,
         Commands::Daemon => run_daemon(&cfg).await?,
+        Commands::Debug => run_debug_send(&cfg).await?,
     }
 
     Ok(())
@@ -136,10 +138,24 @@ async fn run_once(cfg: &config::Config) -> Result<()> {
         let subject = format!("Paper Scout Digest — {}", Utc::now().format("%Y-%m-%d"));
         match notifier::email::send(email_cfg, &subject, &markdown).await {
             Ok(_) => info!("Email sent to {}", email_cfg.to.join(", ")),
-            Err(e) => warn!("Email delivery failed: {}", e),
+            Err(e) => warn!("Email delivery failed: {:#}", e),
         }
     }
 
+    Ok(())
+}
+
+async fn run_debug_send(cfg: &config::Config) -> Result<()> {
+    let markdown = std::fs::read_to_string("./digests/2026-03-07.md")?;
+    if let Some(email_cfg) = &cfg.email {
+        let subject = format!("Paper Scout Digest (Debug) — {}", Utc::now().format("%Y-%m-%d"));
+        match notifier::email::send(email_cfg, &subject, &markdown).await {
+            Ok(_) => info!("Debug email sent to {}", email_cfg.to.join(", ")),
+            Err(e) => warn!("Debug email delivery failed: {:#}", e),
+        }
+    } else {
+        info!("No email config found; skipping debug email send.");
+    }
     Ok(())
 }
 

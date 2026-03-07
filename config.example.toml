@@ -21,7 +21,7 @@ categories = ["cs.IR", "cs.CL", "cs.AI"]
 max_results = 200
 days_back = 1
 
-# ── LLM — three independent model slots ───────────────────────────────────────
+# ── LLM — two independent model slots ───────────────────────────────────────
 #
 #  Each slot has its own provider, api_key, model, and max_tokens.
 #  provider options: "anthropic" | "openai" | "custom"
@@ -39,23 +39,16 @@ deep      = false
 
 # ① Filter model — cheap & fast; batch-scores paper abstracts for relevance
 [llm.filter]
-provider   = "anthropic"
-api_key    = "sk-ant-..."
-model      = "claude-haiku-4-5-20251001"
-max_tokens = 2048
+provider   = "openai"
+api_key    = "sk-..."
+model      = "gpt-4.1-mini"
+max_tokens = 4096
 
 # ② Analysis model — strong; reads abstracts (or PDF text in deep mode) per paper
 [llm.analysis]
-provider   = "anthropic"
-api_key    = "sk-ant-..."
-model      = "claude-sonnet-4-6"
-max_tokens = 4096
-
-# ③ Report model — reserved; configure for future report generation
-[llm.report]
-provider   = "anthropic"
-api_key    = "sk-ant-..."
-model      = "claude-opus-4-6"
+provider   = "custom"
+api_key    = "sk-..."
+model      = "gpt-5.4"
 max_tokens = 8192
 
 # Mix providers across slots — e.g. use a local model for filtering:
@@ -72,16 +65,17 @@ output_dir = "./digests"
 
 # ── Email (optional) ───────────────────────────────────────────────────────────
 # [email]
-# smtp_host    = "smtp.gmail.com"
-# smtp_port    = 587
-# username     = "you@gmail.com"
+# smtp_host    = "smtp.xxx.com"
+# smtp_port    = 465
+# tls_mode     = "tls"
+# username     = "you@xxx.com"
 # password_env = "EMAIL_PASSWORD"   # export EMAIL_PASSWORD=<app-password>
-# from         = "you@gmail.com"
-# to           = ["you@gmail.com"]
+# from         = "you@xxx.com"
+# to           = ["you@xxx.com"]
 
 # ── Daemon schedule ────────────────────────────────────────────────────────────
 [schedule]
-time = "08:00"   # UTC
+time = "08:00"   # UTC Time, you can map it to your local time (e.g, set it to 23:00 for 7:00 Beijing Time)
 
 # ── Retry ──────────────────────────────────────────────────────────────────────
 [retry]

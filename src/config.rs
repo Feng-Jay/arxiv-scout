@@ -107,10 +107,17 @@ pub struct OutputConfig {
 pub struct EmailConfig {
     pub smtp_host: String,
     pub smtp_port: u16,
+    /// TLS mode: "starttls" (default, port 587), "tls" (port 465), "none" (plain, internal relay)
+    #[serde(default = "default_tls_mode")]
+    pub tls_mode: String,
     pub username: String,
     pub password_env: String,
     pub from: String,
     pub to: Vec<String>,
+}
+
+fn default_tls_mode() -> String {
+    "starttls".to_string()
 }
 
 // ---------------------------------------------------------------------------
