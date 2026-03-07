@@ -42,17 +42,85 @@ Each analysed paper gets:
 
 ---
 
-## 🚀 Installation
+## 🚀 Getting Started
 
-Requires [Rust](https://rustup.rs/) (stable).
+There are three ways to use arxiv-scout. Pick the one that fits you best:
+
+---
+
+### 🅰️ Option 1 — Pre-built Binary (no Rust required)
+
+Download the latest binary for your platform from the [Releases page](https://github.com/Feng-Jay/arxiv-scout/releases/latest):
 
 ```bash
-git clone https://github.com/yourname/arxiv-scout
-cd arxiv-scout
-cargo build --release
+# macOS Apple Silicon
+curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/paper-scout-macos-aarch64 -o paper-scout
+chmod +x paper-scout
+
+# macOS Intel
+curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/paper-scout-macos-x86_64 -o paper-scout
+chmod +x paper-scout
+
+# Linux x86_64
+curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/paper-scout-linux-x86_64 -o paper-scout
+chmod +x paper-scout
 ```
 
-The binary will be at `./target/release/paper-scout`.
+**Windows:** download `paper-scout-windows-x86_64.exe` from the Releases page and run it directly.
+
+Then configure and run:
+
+```bash
+cp config.example.toml config.toml
+# edit config.toml with your API keys and interests
+./paper-scout run
+```
+
+> [!NOTE]
+> Pre-built Linux binaries are statically linked (musl), so they run on any Linux distribution with no extra dependencies.
+
+---
+
+### 🅱️ Option 2 — GitHub Actions (zero local setup, runs in the cloud ☁️)
+
+Fork the repo and let GitHub run the digest for you every day automatically — no local machine needed.
+
+**Steps:**
+
+1. **Fork** this repository on GitHub
+2. Go to your fork → **Settings → Secrets and variables → Actions → New repository secret**
+3. Add two secrets:
+
+   | Secret name | Value |
+   |---|---|
+   | `CONFIG_TOML` | The full contents of your `config.toml` |
+   | `EMAIL_PASSWORD` | Your SMTP app password (if using email delivery) |
+
+4. Go to **Actions → Daily Digest → Run workflow** to trigger a manual test run
+5. From then on it runs automatically every day at **08:00 Beijing Time** (00:00 UTC)
+
+Generated digests are committed back to your fork under `digests/YYYY-MM-DD.md`.
+
+> [!TIP]
+> You can adjust the schedule by editing `.github/workflows/daily.yml` and changing the cron expression. Use [crontab.guru](https://crontab.guru) to find your preferred time.
+
+> [!WARNING]
+> Keep your `CONFIG_TOML` secret up to date whenever you change your interests or API keys — the workflow reads it fresh on every run.
+
+---
+
+### 🅲 Option 3 — Build from Source (requires Rust)
+
+```bash
+git clone https://github.com/Feng-Jay/arxiv-scout
+cd arxiv-scout
+cargo build --release
+cp config.example.toml config.toml
+# edit config.toml
+./target/release/paper-scout run
+```
+
+Requires [Rust](https://rustup.rs/) stable toolchain.
 
 ---
 
@@ -99,7 +167,7 @@ output_dir = "./digests"
 
 ### 🔌 LLM Providers
 
-Each model slot (`filter`, `analysis`, `report`) is **independently configured** with its own provider and API key, so you can mix and match freely.
+Each model slot (`filter`, `analysis`) is **independently configured** with its own provider and API key, so you can mix and match freely.
 
 | `provider` | Description |
 |---|---|
