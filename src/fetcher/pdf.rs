@@ -2,42 +2,51 @@ use reqwest::Client;
 use tracing::{info, warn};
 
 /// Fetch clean paper text from arXiv HTML endpoint.
-///
-/// Returns at most `max_chars` characters of cleaned plain text,
-/// or an error if the HTML is unavailable / too short.
+/// Returns at most `max_chars` characters, or `None` if unavailable.
+/// Retries up to `max_attempts` times with exponential backoff.
 pub async fn fetch_paper_text(
     client: &Client,
     paper_id: &str,
     max_chars: usize,
+    max_attempts: u32,
 ) -> Option<String> {
     let url = format!("https://arxiv.org/html/{}", paper_id);
     info!("  Fetching HTML: {}", url);
 
-    let html = match client
-        .get(&url)
-        .header("User-Agent", "Mozilla/5.0 (compatible; paper-scout/0.1)")
-        .send()
-        .await
-        .and_then(|r| {
-            if r.status().is_success() {
-                Ok(r)
+    let html = {
+        let mut last_err;
+        let mut fetched: Option<String> = None;
+        for attempt in 1..=max_attempts.max(1) {
+            match client
+                .get(&url)
+                .header("User-Agent", "Mozilla/5.0 (compatible; paper-scout/0.1)")
+                .send()
+                .await
+            {
+                Err(e) => {
+                    last_err = e.to_string();
+                }
+                Ok(resp) if !resp.status().is_success() => {
+                    last_err = format!("HTTP {}", resp.status());
+                }
+                Ok(resp) => match resp.text().await {
+                    Ok(t) => { fetched = Some(t); break; }
+                    Err(e) => { last_err = e.to_string(); }
+                },
+            }
+            if attempt < max_attempts {
+                let wait = 2_u64.pow(attempt - 1);
+                warn!("  HTML fetch failed for '{}' (attempt {}/{}): {}. Retrying in {}s ...",
+                    paper_id, attempt, max_attempts, last_err, wait);
+                tokio::time::sleep(tokio::time::Duration::from_secs(wait)).await;
             } else {
-                Err(reqwest::Error::from(
-                    // status errors surface as reqwest errors via error_for_status
-                    r.error_for_status().unwrap_err(),
-                ))
+                warn!("  HTML fetch failed for '{}' (attempt {}/{}): {}. Giving up.",
+                    paper_id, attempt, max_attempts, last_err);
             }
-        }) {
-        Ok(resp) => match resp.text().await {
-            Ok(t) => t,
-            Err(e) => {
-                warn!("  Failed to read HTML body for '{}': {}", paper_id, e);
-                return None;
-            }
-        },
-        Err(e) => {
-            warn!("  HTML fetch failed for '{}': {}", paper_id, e);
-            return None;
+        }
+        match fetched {
+            Some(t) => t,
+            None => return None,
         }
     };
 
