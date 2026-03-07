@@ -161,6 +161,13 @@ max_tokens = 8192
 
 [output]
 output_dir = "./digests"
+
+[schedule]
+# UTC time for the daemon's daily run
+time = "23:00"
+
+[retry]
+max_attempts = 3   # retries for arXiv fetches and LLM API calls
 ```
 
 ---
@@ -233,7 +240,7 @@ time = "08:00"   # UTC
 
 ## 📄 Output
 
-Digests are saved as `./digests/YYYY-MM-DD.md`. Example:
+Digests are saved as `./digests/YYYY-MM-DD.md`. [Digest](https://github.com/Feng-Jay/arxiv-scout/tree/master/digests) contains my personal digests for reference. Format Like:
 
 ```markdown
 # 🔭 arxiv-scout Digest — 2026-03-06
