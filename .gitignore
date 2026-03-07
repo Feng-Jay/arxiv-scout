@@ -1,3 +1,4 @@
 /target
 /digests
 .DS_Store
+config.toml
