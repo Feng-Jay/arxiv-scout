@@ -12,18 +12,18 @@ pub fn generate(
     let mut out = String::new();
     let date = Utc::now().format("%Y-%m-%d");
 
-    writeln!(out, "# Paper Scout Digest — {date}").unwrap();
+    writeln!(out, "# 🔭 arxiv-scout Digest — {date}").unwrap();
     writeln!(out).unwrap();
-    writeln!(out, "## Overview").unwrap();
+    writeln!(out, "## 📊 Overview").unwrap();
     writeln!(out, "| | |").unwrap();
     writeln!(out, "|---|---|").unwrap();
-    writeln!(out, "| Fetched from arXiv | {total_fetched} |").unwrap();
-    writeln!(out, "| New (not seen before) | {total_new} |").unwrap();
-    writeln!(out, "| Relevant papers | {} |", papers.len()).unwrap();
+    writeln!(out, "| 📡 Fetched from arXiv | {total_fetched} |").unwrap();
+    writeln!(out, "| 🆕 New (not seen before) | {total_new} |").unwrap();
+    writeln!(out, "| ✅ Relevant papers | {} |", papers.len()).unwrap();
 
     let deep_count = papers.iter().filter(|p| p.deep_analyzed).count();
     if deep_count > 0 {
-        writeln!(out, "| Full PDF analysed | {deep_count} |").unwrap();
+        writeln!(out, "| 🌐 Full text analysed | {deep_count} |").unwrap();
     }
     writeln!(out).unwrap();
 
@@ -44,49 +44,49 @@ pub fn generate(
 
     for p in sorted {
         let score_pct = (p.relevance_score * 100.0).round() as u32;
-        let deep_badge = if p.deep_analyzed { "  `📄 PDF`" } else { "" };
+        let deep_badge = if p.deep_analyzed { "  `🌐 Full Text`" } else { "" };
 
         writeln!(
             out,
-            "## [{}]({})  `{score_pct}% relevant`{deep_badge}",
+            "## 📄 [{}]({})  `{score_pct}% relevant`{deep_badge}",
             p.paper.title, p.paper.url
         )
         .unwrap();
         writeln!(out).unwrap();
 
-        writeln!(out, "**Authors:** {}", p.paper.authors.join(", ")).unwrap();
+        writeln!(out, "👤 **Authors:** {}", p.paper.authors.join(", ")).unwrap();
         writeln!(
             out,
-            "**Published:** {}  **Categories:** {}",
+            "📅 **Published:** {}  🏷️ **Categories:** {}",
             p.paper.published.format("%Y-%m-%d"),
             p.paper.categories.join(", ")
         )
         .unwrap();
         writeln!(out).unwrap();
 
-        writeln!(out, "### TL;DR").unwrap();
+        writeln!(out, "### 💡 TL;DR").unwrap();
         writeln!(out, "{}", p.summary).unwrap();
         writeln!(out).unwrap();
 
-        writeln!(out, "### Key Contributions").unwrap();
+        writeln!(out, "### 🏆 Key Contributions").unwrap();
         for c in &p.key_contributions {
             writeln!(out, "- {c}").unwrap();
         }
         writeln!(out).unwrap();
 
-        writeln!(out, "### Methodology").unwrap();
+        writeln!(out, "### ⚙️ Methodology").unwrap();
         writeln!(out, "{}", p.methodology).unwrap();
         writeln!(out).unwrap();
 
-        writeln!(out, "### Experiments").unwrap();
+        writeln!(out, "### 🧪 Experiments").unwrap();
         writeln!(out, "{}", p.experiments).unwrap();
         writeln!(out).unwrap();
 
-        writeln!(out, "### Insights & Implications").unwrap();
+        writeln!(out, "### 🌱 Insights & Implications").unwrap();
         writeln!(out, "{}", p.insights).unwrap();
         writeln!(out).unwrap();
 
-        writeln!(out, "### Why This Paper").unwrap();
+        writeln!(out, "### 🎯 Why This Paper").unwrap();
         writeln!(out, "{}", p.selection_reason).unwrap();
         writeln!(out).unwrap();
 
