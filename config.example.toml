@@ -82,3 +82,7 @@ output_dir = "./digests"
 # ── Daemon schedule ────────────────────────────────────────────────────────────
 [schedule]
 time = "08:00"   # UTC
+
+# ── Retry ──────────────────────────────────────────────────────────────────────
+[retry]
+max_attempts = 3   # retries for arXiv fetches and LLM API calls (default: 3)

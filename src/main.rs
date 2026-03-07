@@ -52,6 +52,8 @@ async fn main() -> Result<()> {
 }
 
 async fn run_once(cfg: &config::Config) -> Result<()> {
+    let max_attempts = cfg.retry.max_attempts;
+
     // ── Build the three specialised providers ─────────────────────────────────
     let filter_provider = llm::create_provider(&cfg.llm.filter)?;
     let analysis_provider = llm::create_provider(&cfg.llm.analysis)?;
@@ -68,6 +70,7 @@ async fn run_once(cfg: &config::Config) -> Result<()> {
             &cfg.sources.arxiv.categories,
             cfg.sources.arxiv.max_results,
             cfg.sources.arxiv.days_back,
+            max_attempts,
         )
         .await?;
     let total_fetched = all_papers.len();
@@ -92,7 +95,7 @@ async fn run_once(cfg: &config::Config) -> Result<()> {
     // ── 3. Filter (filter model — cheap, batch) ───────────────────────────────
     info!("Filtering papers by relevance (filter model) ...");
     let filtered =
-        filter::filter_papers(&new_papers, filter_provider.as_ref(), &cfg.interests).await?;
+        filter::filter_papers(&new_papers, filter_provider.as_ref(), &cfg.interests, max_attempts).await?;
     info!("{} papers scored", filtered.len());
 
     // ── 4. Analysis (analysis model — per paper) ──────────────────────────────
@@ -111,6 +114,7 @@ async fn run_once(cfg: &config::Config) -> Result<()> {
         cfg.interests.relevance_threshold,
         deep,
         cfg.llm.pdf_chars,
+        max_attempts,
     )
     .await?;
     info!("{} papers analysed", analyzed.len());

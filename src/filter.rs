@@ -1,9 +1,9 @@
 use crate::config::InterestsConfig;
-use crate::llm::LlmProvider;
+use crate::llm::{LlmProvider};
 use crate::models::Paper;
 use anyhow::Result;
 use serde::Deserialize;
-use tracing::{info, warn};
+use tracing::{info, warn, error};
 
 /// Number of papers sent to the LLM in one batch
 const BATCH_SIZE: usize = 20;
@@ -16,11 +16,11 @@ struct FilterResult {
 }
 
 /// Returns `(paper, score 0–1, reason)` for every paper processed.
-/// Papers whose LLM call or JSON parse fails are silently skipped with a warning.
 pub async fn filter_papers(
     papers: &[Paper],
     provider: &dyn LlmProvider,
     interests: &InterestsConfig,
+    max_attempts: u32,
 ) -> Result<Vec<(Paper, f32, String)>> {
     let mut results = Vec::new();
 
@@ -33,17 +33,26 @@ pub async fn filter_papers(
         );
 
         let system = build_system(interests);
-        let user = build_user(batch);
-        info!("Filtering user prompt: {}", user);
-        match provider.complete(&system, &user).await {
-            Ok(response) => match parse_response(&response, batch) {
-                Ok(batch_results) => results.extend(batch_results),
-                Err(e) => warn!("Failed to parse filter response for batch {}: {}", i + 1, e),
-            },
-            Err(e) => warn!("LLM filter request failed for batch {}: {}", i + 1, e),
+        let mut user = build_user(batch);
+        for attemp in 1..=max_attempts.max(1){
+            match provider.complete(&system, &user).await {
+                Ok(response) => match parse_response(&response, batch) {
+                    Ok(batch_results) => {results.extend(batch_results); break;},
+                    Err(e) => {
+                        warn!("Try {}/{}: Failed to parse filter response for batch {}: {}", attemp, max_attempts, i + 1, e);
+                        user.push_str(&format!("\n\n Former response failed to parse JSON: {}\nPlease try again and ensure the response is a wrap in ```json ``` and is valid JSON array as instructed.", e));
+                    },
+                },
+                Err(e) => {
+                    warn!("Filter LLM call failed for batch {} after {}th try: {}", i + 1, attemp, e);
+                },
+            };
+            if attemp < max_attempts {
+                warn!("Retring attempt {}/{} ...", attemp + 1, max_attempts);
+            }else{
+                error!("Giving up on batch {} after {} attempts.", i + 1, max_attempts);
+            }
         }
-
-        // Small delay to avoid hammering rate limits
         tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
     }
 

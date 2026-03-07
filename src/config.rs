@@ -11,6 +11,8 @@ pub struct Config {
     pub email: Option<EmailConfig>,
     #[serde(default)]
     pub schedule: ScheduleConfig,
+    #[serde(default)]
+    pub retry: RetryConfig,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -132,6 +134,28 @@ impl Default for ScheduleConfig {
 
 fn default_time() -> String {
     "08:00".to_string()
+}
+
+// ---------------------------------------------------------------------------
+// Retry
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RetryConfig {
+    /// Maximum number of attempts for external calls (arXiv, LLM APIs).
+    /// Must be ≥ 1. Default: 3.
+    #[serde(default = "default_max_attempts")]
+    pub max_attempts: u32,
+}
+
+impl Default for RetryConfig {
+    fn default() -> Self {
+        Self { max_attempts: default_max_attempts() }
+    }
+}
+
+fn default_max_attempts() -> u32 {
+    3
 }
 
 // ---------------------------------------------------------------------------

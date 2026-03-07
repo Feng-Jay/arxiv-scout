@@ -2,6 +2,7 @@ use crate::models::Paper;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use reqwest::Client;
+use tracing::warn;
 
 const ATOM_NS: &str = "http://www.w3.org/2005/Atom";
 const ARXIV_API: &str = "https://export.arxiv.org/api/query";
@@ -22,6 +23,7 @@ impl ArxivFetcher {
         categories: &[String],
         max_results: usize,
         days_back: u32,
+        max_attempts: u32,
     ) -> Result<Vec<Paper>> {
         let search_query = categories
             .iter()
@@ -34,17 +36,28 @@ impl ArxivFetcher {
             ARXIV_API, search_query, max_results
         );
 
-        let xml = self
-            .client
-            .get(&url)
-            .send()
-            .await
-            .context("Failed to reach arXiv API")?
-            .text()
-            .await
-            .context("Failed to read arXiv response")?;
-
-        parse_atom_feed(&xml, days_back)
+        let mut last_err = anyhow::anyhow!("no attempts made");
+        for attempt in 1..=max_attempts.max(1) {
+            match self.client.get(&url).send().await {
+                Err(e) => {
+                    last_err = anyhow::anyhow!("{}", e);
+                }
+                Ok(resp) => match resp.text().await.context("Failed to read arXiv response") {
+                    Err(e) => { last_err = e; }
+                    Ok(xml) => return parse_atom_feed(&xml, days_back),
+                },
+            }
+            if attempt < max_attempts {
+                let wait = 2_u64.pow(attempt - 1);
+                warn!("arXiv fetch failed (attempt {}/{}): {}. Retrying in {}s ...",
+                    attempt, max_attempts, last_err, wait);
+                tokio::time::sleep(tokio::time::Duration::from_secs(wait)).await;
+            } else {
+                warn!("arXiv fetch failed (attempt {}/{}): {}. Giving up.",
+                    attempt, max_attempts, last_err);
+            }
+        }
+        Err(last_err)
     }
 }
 

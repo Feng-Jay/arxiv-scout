@@ -1,10 +1,10 @@
 use crate::config::InterestsConfig;
-use crate::llm::LlmProvider;
+use crate::llm::{LlmProvider};
 use crate::models::{AnalyzedPaper, Paper};
 use anyhow::Result;
 use reqwest::Client;
 use serde::Deserialize;
-use tracing::{info, warn};
+use tracing::{info, warn, error};
 
 #[derive(Deserialize)]
 struct AnalysisResult {
@@ -23,6 +23,7 @@ pub async fn analyze_papers(
     threshold: f32,
     deep: bool,
     pdf_chars: usize,
+    max_attempts: u32,
 ) -> Result<Vec<AnalyzedPaper>> {
     let relevant: Vec<_> = filtered
         .iter()
@@ -45,32 +46,45 @@ pub async fn analyze_papers(
 
         // Optionally fetch full paper text via arXiv HTML
         let paper_text = if deep {
-            crate::fetcher::pdf::fetch_paper_text(&client, &paper.id, pdf_chars).await
+            crate::fetcher::pdf::fetch_paper_text(&client, &paper.id, pdf_chars, max_attempts).await
         } else {
             None
         };
 
         let deep_analyzed = paper_text.is_some();
         let system = analysis_system(interests, deep_analyzed);
-        let user = analysis_user(paper, paper_text.as_deref());
-
-        match provider.complete(&system, &user).await {
-            Ok(resp) => match parse_analysis(&resp) {
-                Ok(r) => analyzed.push(AnalyzedPaper {
-                    paper: (*paper).clone(),
-                    relevance_score: *score,
-                    relevance_reason: filter_reason.clone(),
-                    summary: r.summary,
-                    key_contributions: r.key_contributions,
-                    methodology: r.methodology,
-                    experiments: r.experiments,
-                    insights: r.insights,
-                    selection_reason: r.selection_reason,
-                    deep_analyzed,
-                }),
-                Err(e) => warn!("Analysis parse error for '{}': {}", paper.id, e),
-            },
-            Err(e) => warn!("Analysis LLM call failed for '{}': {}", paper.id, e),
+        let mut user = analysis_user(paper, paper_text.as_deref());
+        for attemp in 1..=max_attempts.max(1){
+            match provider.complete(&system, &user).await {
+                Ok(resp) => match parse_analysis(&resp) {
+                    Ok(r) => {
+                        analyzed.push(AnalyzedPaper {
+                        paper: (*paper).clone(),
+                        relevance_score: *score,
+                        relevance_reason: filter_reason.clone(),
+                        summary: r.summary,
+                        key_contributions: r.key_contributions,
+                        methodology: r.methodology,
+                        experiments: r.experiments,
+                        insights: r.insights,
+                        selection_reason: r.selection_reason,
+                        deep_analyzed}); 
+                        break;
+                    },
+                    Err(e) => {
+                        warn!("Try {}/{}: Analysis parse error for '{}': {}", attemp, max_attempts, paper.id, e);
+                        user.push_str(&format!("\n\n Former response failed to parse JSON: {}\nPlease try again and ensure the response is a wrap in ```json ``` and is valid JSON object as instructed.", e));
+                    },
+                },
+                Err(e) => {
+                    warn!("Analysis LLM call failed for '{}' after {}th try: {}", paper.id, attemp, e);
+                }
+            };
+            if attemp < max_attempts {
+                warn!("Retring attempt {}/{} ...", attemp + 1, max_attempts);
+            }else{
+                error!("Giving up on '{}' after {} attempts.", paper.id, max_attempts);
+            }
         }
 
         tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
@@ -95,7 +109,7 @@ fn analysis_system(interests: &InterestsConfig, has_full_text: bool) -> String {
 
 Return ONLY valid JSON with NO prose and NO markdown fences:
 {{
-  "summary": "2-3 sentence comprehensive summary of the paper",
+  "summary": "1-2 sentence TL;DR — the core idea and main result in plain language",
   "key_contributions": ["contribution 1", "contribution 2", "..."],
   "methodology": "Detailed description of the proposed method, model architecture, or study design",
   "experiments": "Experimental setup: datasets, baselines, metrics, and key quantitative results",
