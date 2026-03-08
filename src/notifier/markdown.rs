@@ -28,7 +28,18 @@ pub fn generate(
     writeln!(out).unwrap();
 
     if papers.is_empty() {
-        writeln!(out, "_No relevant papers found today._").unwrap();
+        writeln!(out).unwrap();
+        writeln!(out, "---").unwrap();
+        writeln!(out).unwrap();
+        writeln!(out, "## 🌤️ All Quiet Today").unwrap();
+        writeln!(out).unwrap();
+        writeln!(
+            out,
+            "No papers matched your interests today — the arxiv was checked, but nothing rose above the relevance threshold. 📭"
+        )
+        .unwrap();
+        writeln!(out).unwrap();
+        writeln!(out, "Take a break, grab a coffee ☕, and come back tomorrow — great papers are always just around the corner. 🚀").unwrap();
         return out;
     }
 
@@ -93,6 +104,39 @@ pub fn generate(
         writeln!(out, "---").unwrap();
         writeln!(out).unwrap();
     }
+
+    out
+}
+
+pub fn generate_empty(total_fetched: usize) -> String {
+    let mut out = String::new();
+    let date = Utc::now().format("%Y-%m-%d");
+
+    writeln!(out, "# 🔭 arxiv-scout Digest — {date}").unwrap();
+    writeln!(out).unwrap();
+    writeln!(out, "## 📊 Overview").unwrap();
+    writeln!(out, "| | |").unwrap();
+    writeln!(out, "|---|---|").unwrap();
+    writeln!(out, "| 📡 Fetched from arXiv | {total_fetched} |").unwrap();
+    writeln!(out, "| 🆕 New (not seen before) | 0 |").unwrap();
+    writeln!(out, "| ✅ Relevant papers | 0 |").unwrap();
+    writeln!(out).unwrap();
+    writeln!(out, "---").unwrap();
+    writeln!(out).unwrap();
+    writeln!(out, "## 😴 Nothing New Today").unwrap();
+    writeln!(out).unwrap();
+    writeln!(
+        out,
+        "All {} fetched papers have already been seen in previous runs. 📬",
+        total_fetched
+    )
+    .unwrap();
+    writeln!(out).unwrap();
+    writeln!(
+        out,
+        "No worries — rest up and check back tomorrow. Great research is always brewing. ☕🚀"
+    )
+    .unwrap();
 
     out
 }

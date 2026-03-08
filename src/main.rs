@@ -90,7 +90,17 @@ async fn run_once(cfg: &config::Config) -> Result<()> {
     info!("{} new papers after deduplication", total_new);
 
     if new_papers.is_empty() {
-        info!("Nothing new to process today.");
+        info!("Nothing new to process today — generating empty digest.");
+        let markdown = notifier::markdown::generate_empty(total_fetched);
+        let digest_path = notifier::markdown::save(&cfg.output.output_dir, &markdown)?;
+        info!("Digest saved to {}", digest_path.display());
+        if let Some(email_cfg) = &cfg.email {
+            let subject = format!("📭 Paper Scout — No New Papers ({})", Utc::now().format("%Y-%m-%d"));
+            match notifier::email::send(email_cfg, &subject, &markdown).await {
+                Ok(_) => info!("Email sent to {}", email_cfg.to.join(", ")),
+                Err(e) => warn!("Email delivery failed: {:#}", e),
+            }
+        }
         return Ok(());
     }
 
