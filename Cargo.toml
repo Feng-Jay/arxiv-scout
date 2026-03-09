@@ -1,11 +1,11 @@
 [package]
-name = "paper-scout"
-version = "0.1.0"
+name = "arxiv-scout"
+version = "0.1.3"
 edition = "2021"
 description = "Daily arXiv paper digest powered by LLM analysis"
 
 [[bin]]
-name = "paper-scout"
+name = "arxiv-scout"
 path = "src/main.rs"
 
 [dependencies]
