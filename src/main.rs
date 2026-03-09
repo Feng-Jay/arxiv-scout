@@ -13,7 +13,7 @@ use clap::{Parser, Subcommand};
 use tracing::{info, warn};
 
 #[derive(Parser)]
-#[command(name = "paper-scout", about = "Daily arXiv paper digest powered by LLM")]
+#[command(name = "arxiv-scout", about = "Daily arXiv paper digest powered by LLM")]
 struct Cli {
     /// Path to config file
     #[arg(short, long, default_value = "config.toml")]

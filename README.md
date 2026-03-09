@@ -1,4 +1,10 @@
-# 🔭 arxiv-scout
+# 🔭 arxiv-scout 
+
+<p align="left">
+<a href="https://img.shields.io/badge/PRs-welcome-blue"><img alt="Static Badge" src="https://img.shields.io/badge/PRs-welcome-blue?style=for-the-badge"></a>
+<a href="https://github.com/Feng-Jay/arxiv-scout/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Feng-Jay/r_agent?style=for-the-badge&color=yellow"> </a>
+</p>
+
 
 **Your personal AI-powered arXiv research assistant.** Fetches the latest papers, scores their relevance to your interests, and delivers a structured daily digest — optionally enriched with full-paper analysis.
 
@@ -54,26 +60,26 @@ Download the latest binary for your platform from the [Releases page](https://gi
 
 ```bash
 # macOS Apple Silicon
-curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/paper-scout-macos-aarch64 -o paper-scout
-chmod +x paper-scout
+curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/arxiv-scout-macos-aarch64 -o arxiv-scout
+chmod +x arxiv-scout
 
 # macOS Intel
-curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/paper-scout-macos-x86_64 -o paper-scout
-chmod +x paper-scout
+curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/arxiv-scout-macos-x86_64 -o arxiv-scout
+chmod +x arxiv-scout
 
 # Linux x86_64
-curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/paper-scout-linux-x86_64 -o paper-scout
-chmod +x paper-scout
+curl -L https://github.com/Feng-Jay/arxiv-scout/releases/latest/download/arxiv-scout-linux-x86_64 -o arxiv-scout
+chmod +x arxiv-scout
 ```
 
-**Windows:** download `paper-scout-windows-x86_64.exe` from the Releases page and run it directly.
+**Windows:** download `arxiv-scout-windows-x86_64.exe` from the Releases page and run it directly.
 
 Then configure and run:
 
 ```bash
 cp config.example.toml config.toml
 # edit config.toml with your API keys and interests
-./paper-scout run
+./arxiv-scout run
 ```
 
 > [!NOTE]
@@ -117,7 +123,7 @@ cd arxiv-scout
 cargo build --release
 cp config.example.toml config.toml
 # edit config.toml
-./target/release/paper-scout run
+./target/release/arxiv-scout run
 ```
 
 Requires [Rust](https://rustup.rs/) stable toolchain.
@@ -219,15 +225,15 @@ pdf_chars = 15000
 
 **Run once:**
 ```bash
-./target/release/paper-scout run
+./target/release/arxiv-scout run
 
 # Custom config file
-./target/release/paper-scout -c my-config.toml run
+./target/release/arxiv-scout -c my-config.toml run
 ```
 
 **Run as a daemon** (re-runs daily at the scheduled UTC time):
 ```bash
-./target/release/paper-scout daemon
+./target/release/arxiv-scout daemon
 ```
 
 **Schedule:**

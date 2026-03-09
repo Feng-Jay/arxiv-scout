@@ -19,7 +19,7 @@ pub async fn fetch_paper_text(
         for attempt in 1..=max_attempts.max(1) {
             match client
                 .get(&url)
-                .header("User-Agent", "Mozilla/5.0 (compatible; paper-scout/0.1)")
+                .header("User-Agent", "Mozilla/5.0 (compatible; arxiv-scout/0.1)")
                 .send()
                 .await
             {

@@ -17,19 +17,19 @@ jobs:
         include:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
-            artifact: paper-scout-linux-x86_64
+            artifact: arxiv-scout-linux-x86_64
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
-            artifact: paper-scout-linux-aarch64
+            artifact: arxiv-scout-linux-aarch64
           - target: x86_64-apple-darwin
             os: macos-latest
-            artifact: paper-scout-macos-x86_64
+            artifact: arxiv-scout-macos-x86_64
           - target: aarch64-apple-darwin
             os: macos-latest
-            artifact: paper-scout-macos-aarch64
+            artifact: arxiv-scout-macos-aarch64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            artifact: paper-scout-windows-x86_64.exe
+            artifact: arxiv-scout-windows-x86_64.exe
 
     steps:
       - uses: actions/checkout@v4
@@ -61,12 +61,12 @@ jobs:
       - name: Rename binary (Unix)
         if: matrix.os != 'windows-latest'
         run: |
-          cp target/${{ matrix.target }}/release/paper-scout ${{ matrix.artifact }}
+          cp target/${{ matrix.target }}/release/arxiv-scout ${{ matrix.artifact }}
 
       - name: Rename binary (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          cp target/${{ matrix.target }}/release/paper-scout.exe ${{ matrix.artifact }}
+          cp target/${{ matrix.target }}/release/arxiv-scout.exe ${{ matrix.artifact }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -99,23 +99,23 @@ jobs:
             **macOS / Linux:**
             ```bash
             # macOS Apple Silicon
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/paper-scout-macos-aarch64 -o paper-scout
-            chmod +x paper-scout
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/arxiv-scout-macos-aarch64 -o arxiv-scout
+            chmod +x arxiv-scout
 
             # macOS Intel
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/paper-scout-macos-x86_64 -o paper-scout
-            chmod +x paper-scout
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/arxiv-scout-macos-x86_64 -o arxiv-scout
+            chmod +x arxiv-scout
 
             # Linux x86_64
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/paper-scout-linux-x86_64 -o paper-scout
-            chmod +x paper-scout
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/arxiv-scout-linux-x86_64 -o arxiv-scout
+            chmod +x arxiv-scout
             ```
 
-            **Windows:** download `paper-scout-windows-x86_64.exe` and run directly.
+            **Windows:** download `arxiv-scout-windows-x86_64.exe` and run directly.
 
             Then copy and edit the config:
             ```bash
             cp config.example.toml config.toml
             # edit config.toml with your API keys
-            ./paper-scout run
+            ./arxiv-scout run
             ```

@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "$CONFIG_TOML" > config.toml
 
-      - name: Run paper-scout
+      - name: Run arxiv-scout
         env:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
         run: cargo run --release -- run
