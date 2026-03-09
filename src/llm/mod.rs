@@ -1,9 +1,9 @@
-pub mod anthropic;
-pub mod openai_compat;
+pub mod genai_provider;
 
 use crate::config::ModelSlotConfig;
 use anyhow::Result;
 use async_trait::async_trait;
+use genai::adapter::AdapterKind;
 
 #[async_trait]
 pub trait LlmProvider: Send + Sync {
@@ -11,35 +11,32 @@ pub trait LlmProvider: Send + Sync {
 }
 
 pub fn create_provider(slot: &ModelSlotConfig) -> Result<Box<dyn LlmProvider>> {
-    match slot.provider.as_str() {
+    let (adapter_kind, endpoint) = match slot.provider.as_str() {
         "openai" => {
             let base_url = slot
                 .base_url
                 .clone()
-                .unwrap_or_else(|| "https://api.openai.com/v1".to_string());
-            Ok(Box::new(openai_compat::OpenAiCompatProvider::new(
-                base_url,
-                slot.api_key.clone(),
-                slot.model.clone(),
-                slot.max_tokens,
-            )))
+                .unwrap_or_else(|| "https://api.openai.com/v1/".to_string());
+            (AdapterKind::OpenAI, base_url)
         }
-        "anthropic" => Ok(Box::new(anthropic::AnthropicProvider::new(
-            slot.api_key.clone(),
-            slot.model.clone(),
-            slot.max_tokens,
-        ))),
+        "anthropic" => (
+            AdapterKind::Anthropic,
+            "https://api.anthropic.com/v1/".to_string(),
+        ),
         "custom" => {
             let base_url = slot.base_url.clone().ok_or_else(|| {
                 anyhow::anyhow!("'custom' provider requires base_url to be set")
             })?;
-            Ok(Box::new(openai_compat::OpenAiCompatProvider::new(
-                base_url,
-                slot.api_key.clone(),
-                slot.model.clone(),
-                slot.max_tokens,
-            )))
+            (AdapterKind::OpenAI, base_url)
         }
-        other => Err(anyhow::anyhow!("Unknown LLM provider: '{}'", other)),
-    }
+        other => return Err(anyhow::anyhow!("Unknown LLM provider: '{}'", other)),
+    };
+
+    Ok(Box::new(genai_provider::GenaiProvider::new(
+        adapter_kind,
+        endpoint,
+        slot.api_key.clone(),
+        slot.model.clone(),
+        slot.max_tokens,
+    )))
 }
