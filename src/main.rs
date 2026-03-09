@@ -95,7 +95,7 @@ async fn run_once(cfg: &config::Config) -> Result<()> {
         let digest_path = notifier::markdown::save(&cfg.output.output_dir, &markdown)?;
         info!("Digest saved to {}", digest_path.display());
         if let Some(email_cfg) = &cfg.email {
-            let subject = format!("📭 Paper Scout — No New Papers ({})", Utc::now().format("%Y-%m-%d"));
+            let subject = format!("📭 Arxiv-Scout — No New Papers ({})", Utc::now().format("%Y-%m-%d"));
             match notifier::email::send(email_cfg, &subject, &markdown).await {
                 Ok(_) => info!("Email sent to {}", email_cfg.to.join(", ")),
                 Err(e) => warn!("Email delivery failed: {:#}", e),
@@ -145,7 +145,7 @@ async fn run_once(cfg: &config::Config) -> Result<()> {
 
     // ── 7. Optional email ─────────────────────────────────────────────────────
     if let Some(email_cfg) = &cfg.email {
-        let subject = format!("Paper Scout Digest — {}", Utc::now().format("%Y-%m-%d"));
+        let subject = format!("📭 Arxiv-Scout Digest — {}", Utc::now().format("%Y-%m-%d"));
         match notifier::email::send(email_cfg, &subject, &markdown).await {
             Ok(_) => info!("Email sent to {}", email_cfg.to.join(", ")),
             Err(e) => warn!("Email delivery failed: {:#}", e),
