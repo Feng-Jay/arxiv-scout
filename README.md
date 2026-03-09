@@ -2,7 +2,7 @@
 
 <p align="left">
 <a href="https://img.shields.io/badge/PRs-welcome-blue"><img alt="Static Badge" src="https://img.shields.io/badge/PRs-welcome-blue?style=for-the-badge"></a>
-<a href="https://github.com/Feng-Jay/arxiv-scout/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Feng-Jay/r_agent?style=for-the-badge&color=yellow"> </a>
+<a href="https://github.com/Feng-Jay/arxiv-scout/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Feng-Jay/arxiv-scout?style=for-the-badge&color=yellow"> </a>
 </p>
 
 
